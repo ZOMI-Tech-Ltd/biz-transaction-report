@@ -68,6 +68,10 @@ instance/
 # Scrapy stuff:
 .scrapy
 
+# Report template
+report_template/
+# Reports
+reports/
 # Sphinx documentation
 docs/_build/
 
@@ -169,3 +173,22 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Generated report files
+generated_reports/
+*/pdf_reports/
+
+# Uncomment if you don't want to track the template files
+# report_template/*.png
+
+# Logs
+report_generation.log
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
