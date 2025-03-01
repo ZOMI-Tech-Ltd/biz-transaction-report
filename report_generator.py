@@ -33,10 +33,31 @@ class ReportGenerator:
         self.overview_template = os.path.join("report_template", "ReportOverview.png")
         self.details_template = os.path.join("report_template", "Reports.png")
         
-        # Define font styles (adjust paths to your font files)
-        self.font_regular = ImageFont.truetype("arial.ttf", 24)
-        self.font_bold = ImageFont.truetype("arialbd.ttf", 26)
-        self.font_small = ImageFont.truetype("arial.ttf", 18)
+        # Define font styles with various sizes for different data
+        # You can adjust these sizes as needed
+        self.fonts = {
+            # Font sizes for regular text
+            'regular': {
+                'small': ImageFont.truetype("arial.ttf", 14),
+                'medium': ImageFont.truetype("arial.ttf", 20),
+                'normal': ImageFont.truetype("arial.ttf", 24),
+                'large': ImageFont.truetype("arial.ttf", 28),
+                'xlarge': ImageFont.truetype("arial.ttf", 32)
+            },
+            # Font sizes for bold text
+            'bold': {
+                'small': ImageFont.truetype("arialbd.ttf", 14),
+                'medium': ImageFont.truetype("arialbd.ttf", 20),
+                'normal': ImageFont.truetype("arialbd.ttf", 26),
+                'large': ImageFont.truetype("arialbd.ttf", 30),
+                'xlarge': ImageFont.truetype("arialbd.ttf", 36)
+            }
+        }
+        
+        # For backward compatibility with existing code
+        self.font_regular = self.fonts['regular']['normal']
+        self.font_bold = self.fonts['bold']['normal']  
+        self.font_small = self.fonts['regular']['small']
     
     def generate_report(self, bill_data, store_info, orders):
         """Generate complete report PDF for a merchant"""
@@ -60,39 +81,39 @@ class ReportGenerator:
         img = Image.open(self.overview_template)
         draw = ImageDraw.Draw(img)
         
-        # Add text to the template
-        # Store name
+        # Add text to the template with specific font sizes
+        # Store name - using large bold font
         # Comment: Position X: 350, Y: 150
-        draw.text((350, 150), store_info['name'], fill="black", font=self.font_bold)
+        draw.text((350, 150), store_info['name'], fill="black", font=self.fonts['bold']['large'])
         
-        # Store address
+        # Store address - using medium regular font
         # Comment: Position X: 350, Y: 190
-        draw.text((350, 190), store_info['address'], fill="black", font=self.font_regular)
+        draw.text((350, 190), store_info['address'], fill="black", font=self.fonts['regular']['medium'])
         
-        # Time period
+        # Time period - using medium regular font
         # Comment: Position X: 350, Y: 250
         time_period = f"{bill_data['start_date'].strftime('%B %d, %Y')} - {bill_data['end_date'].strftime('%B %d, %Y')}"
-        draw.text((350, 250), time_period, fill="black", font=self.font_regular)
+        draw.text((350, 250), time_period, fill="black", font=self.fonts['regular']['medium'])
         
-        # Settlement amount
+        # Settlement amount - using xlarge bold font for emphasis
         # Comment: Position X: 600, Y: 400
-        draw.text((600, 400), f"${bill_data['settlement_amount']:.2f}", fill="black", font=self.font_bold)
+        draw.text((600, 400), f"${bill_data['settlement_amount']:.2f}", fill="black", font=self.fonts['bold']['xlarge'])
         
-        # Total orders
+        # Total orders - using normal regular font
         # Comment: Position X: 350, Y: 480
-        draw.text((350, 480), str(bill_data['total_orders']), fill="black", font=self.font_regular)
+        draw.text((350, 480), str(bill_data['total_orders']), fill="black", font=self.fonts['regular']['normal'])
         
-        # Total revenue
+        # Total revenue - using large bold font
         # Comment: Position X: 600, Y: 480
-        draw.text((600, 480), f"${bill_data['total_revenue']:.2f}", fill="black", font=self.font_regular)
+        draw.text((600, 480), f"${bill_data['total_revenue']:.2f}", fill="black", font=self.fonts['bold']['large'])
         
         # Return the generated image
         return img
     
     def _generate_detail_pages(self, bill_data, store_info, orders):
-        """Generate detail report pages for orders, 40 orders per page"""
+        """Generate detail report pages for orders, 23 orders per page"""
         pages = []
-        orders_per_page = 40
+        orders_per_page = 23
         total_pages = math.ceil(len(orders) / orders_per_page)
         
         for page_num in range(total_pages):
@@ -101,15 +122,15 @@ class ReportGenerator:
             
             # Add store name and time period to each page
             # Comment: Position X: 350, Y: 80
-            draw.text((350, 80), store_info['name'], fill="black", font=self.font_bold)
+            draw.text((350, 80), store_info['name'], fill="black", font=self.fonts['bold']['normal'])
             
             # Comment: Position X: 350, Y: 120
             time_period = f"{bill_data['start_date'].strftime('%B %d, %Y')} - {bill_data['end_date'].strftime('%B %d, %Y')}"
-            draw.text((350, 120), time_period, fill="black", font=self.font_regular)
+            draw.text((350, 120), time_period, fill="black", font=self.fonts['regular']['medium'])
             
             # Add page number
             # Comment: Position X: 700, Y: 80
-            draw.text((700, 80), f"Page {page_num + 1}/{total_pages}", fill="black", font=self.font_small)
+            draw.text((700, 80), f"Page {page_num + 1}/{total_pages}", fill="black", font=self.fonts['regular']['small'])
             
             # Get orders for this page
             start_idx = page_num * orders_per_page
@@ -127,15 +148,15 @@ class ReportGenerator:
                 
                 # Order date (column 1)
                 # Comment: Date column X: 100
-                draw.text((100, row_y), order['created_at'].strftime("%Y-%m-%d"), fill="black", font=self.font_small)
+                draw.text((100, row_y), order['created_at'].strftime("%Y-%m-%d"), fill="black", font=self.fonts['regular']['small'])
                 
                 # Pickup code (column 2)
                 # Comment: Pickup code column X: 300
-                draw.text((300, row_y), str(order['pickup_code']), fill="black", font=self.font_small)
+                draw.text((300, row_y), str(order['pickup_code']), fill="black", font=self.fonts['bold']['small'])
                 
                 # Order amount (column 3)
                 # Comment: Amount column X: 600
-                draw.text((600, row_y), f"${order['store_total_fee']:.2f}", fill="black", font=self.font_small)
+                draw.text((600, row_y), f"${order['store_total_fee']:.2f}", fill="black", font=self.fonts['regular']['small'])
             
             pages.append(img)
         
