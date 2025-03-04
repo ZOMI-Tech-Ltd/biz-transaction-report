@@ -59,6 +59,8 @@ def main():
             # Add total_orders and total_revenue to bill data for the overview page
             bill['total_orders'] = len(orders)
             bill['total_revenue'] = sum(order['store_total_fee'] for order in orders)
+            # 计算unique_users
+            bill['unique_users'] = len(set(order['user_id'] for order in orders))
             
             # Generate report
             report_path = report_gen.generate_report(bill, store_info, orders)

@@ -1,0 +1,23 @@
+{
+    "overview": {
+        "store_name": {"x": 105, "y": 500},
+        "store_address": {"x": 650, "y": 500},
+        "time_period": {"x": 1500, "y": 500},
+        "settlement_amount": {"x": 105, "y": 780},
+        "total_orders": {"x": 650, "y": 780},
+        "total_revenue": {"x": 1600, "y": 780},
+        "pickup_tip_fee": {"x": 105, "y": 1050},
+        "stripe_fee": {"x": 650, "y": 1050},
+        "unique_users": {"x": 1600, "y": 1050}
+    },
+    "detail": {
+        "store_name": {"x": 350, "y": 80},
+        "time_period": {"x": 350, "y": 120},
+        "page_number": {"x": 700, "y": 80},
+        "order_date": {"x": 100},
+        "pickup_code": {"x": 300},
+        "order_amount": {"x": 600},
+        "order_start_y": 200,
+        "order_y_increment": 30
+    }
+}

@@ -1,4 +1,5 @@
 import os
+import json
 from PIL import Image, ImageDraw, ImageFont
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -49,7 +50,7 @@ class ReportGenerator:
                 'small': ImageFont.truetype("arialbd.ttf", 14),
                 'medium': ImageFont.truetype("arialbd.ttf", 20),
                 'normal': ImageFont.truetype("arialbd.ttf", 26),
-                'large': ImageFont.truetype("arialbd.ttf", 30),
+                'large': ImageFont.truetype("arialbd.ttf", 52),
                 'xlarge': ImageFont.truetype("arialbd.ttf", 36)
             }
         }
@@ -58,6 +59,11 @@ class ReportGenerator:
         self.font_regular = self.fonts['regular']['normal']
         self.font_bold = self.fonts['bold']['normal']  
         self.font_small = self.fonts['regular']['small']
+
+        # Load position configuration from JSON file
+        config_path = os.path.join(os.path.dirname(__file__), 'pos_config.json')
+        with open(config_path, 'r') as f:
+            self.pos_config = json.load(f)
     
     def generate_report(self, bill_data, store_info, orders):
         """Generate complete report PDF for a merchant"""
@@ -81,31 +87,45 @@ class ReportGenerator:
         img = Image.open(self.overview_template)
         draw = ImageDraw.Draw(img)
         
-        # Add text to the template with specific font sizes
-        # Store name - using large bold font
-        # Comment: Position X: 350, Y: 150
-        draw.text((350, 150), store_info['name'], fill="black", font=self.fonts['bold']['large'])
+        # Draw store name using JSON params
+        pos = self.pos_config['overview']['store_name']
+        draw.text((pos['x'], pos['y']), store_info['name'], fill="black", font=self.fonts['bold']['large'])
         
-        # Store address - using medium regular font
-        # Comment: Position X: 350, Y: 190
-        draw.text((350, 190), store_info['address'], fill="black", font=self.fonts['regular']['medium'])
+        # Draw store address
+        pos = self.pos_config['overview']['store_address']
+        draw.text((pos['x'], pos['y']), store_info['address'], fill="black", font=self.fonts['bold']['large'])
         
-        # Time period - using medium regular font
-        # Comment: Position X: 350, Y: 250
+        # Draw time period
+        pos = self.pos_config['overview']['time_period']
         time_period = f"{bill_data['start_date'].strftime('%B %d, %Y')} - {bill_data['end_date'].strftime('%B %d, %Y')}"
-        draw.text((350, 250), time_period, fill="black", font=self.fonts['regular']['medium'])
+        draw.text((pos['x'], pos['y']), time_period, fill="black", font=self.fonts['bold']['large'])
         
-        # Settlement amount - using xlarge bold font for emphasis
-        # Comment: Position X: 600, Y: 400
-        draw.text((600, 400), f"${bill_data['settlement_amount']:.2f}", fill="black", font=self.fonts['bold']['xlarge'])
+        # Draw settlement amount
+        pos = self.pos_config['overview']['settlement_amount']
+        draw.text((pos['x'], pos['y']), f"${bill_data['settlement_amount']:.2f}", fill="black", font=self.fonts['bold']['large'])
         
-        # Total orders - using normal regular font
-        # Comment: Position X: 350, Y: 480
-        draw.text((350, 480), str(bill_data['total_orders']), fill="black", font=self.fonts['regular']['normal'])
+        # Draw total orders
+        pos = self.pos_config['overview']['total_orders']
+        draw.text((pos['x'], pos['y']), str(bill_data['total_orders']), fill="black", font=self.fonts['bold']['large'])
         
-        # Total revenue - using large bold font
-        # Comment: Position X: 600, Y: 480
-        draw.text((600, 480), f"${bill_data['total_revenue']:.2f}", fill="black", font=self.fonts['bold']['large'])
+        # Draw total revenue
+        pos = self.pos_config['overview']['total_revenue']
+        draw.text((pos['x'], pos['y']), f"${bill_data['total_revenue']:.2f}", fill="black", font=self.fonts['bold']['large'])
+        
+        # Draw pickup_tip_fee with default 0.0 if missing
+        pos = self.pos_config['overview']['pickup_tip_fee']
+        pickup_tip_fee = bill_data.get('pickup_tip_fee', 0.0)
+        draw.text((pos['x'], pos['y']), f"${pickup_tip_fee:.2f}", fill="black", font=self.fonts['bold']['large'])
+        
+        # Draw stripe_fee with default 0.0 if missing
+        pos = self.pos_config['overview']['stripe_fee']
+        stripe_fee = bill_data.get('stripe_fee', 0.0)
+        draw.text((pos['x'], pos['y']), f"${stripe_fee:.2f}", fill="black", font=self.fonts['bold']['large'])
+        
+        # Draw unique_users with default 0 if missing
+        pos = self.pos_config['overview']['unique_users']
+        unique_users = bill_data.get('unique_users', 0)
+        draw.text((pos['x'], pos['y']), str(unique_users), fill="black", font=self.fonts['bold']['large'])
         
         # Return the generated image
         return img
@@ -120,43 +140,41 @@ class ReportGenerator:
             img = Image.open(self.details_template)
             draw = ImageDraw.Draw(img)
             
-            # Add store name and time period to each page
-            # Comment: Position X: 350, Y: 80
-            draw.text((350, 80), store_info['name'], fill="black", font=self.fonts['bold']['normal'])
+            # Draw store name in details page
+            pos = self.pos_config['detail']['store_name']
+            draw.text((pos['x'], pos['y']), store_info['name'], fill="black", font=self.fonts['bold']['normal'])
             
-            # Comment: Position X: 350, Y: 120
+            # Draw time period in details page
+            pos = self.pos_config['detail']['time_period']
             time_period = f"{bill_data['start_date'].strftime('%B %d, %Y')} - {bill_data['end_date'].strftime('%B %d, %Y')}"
-            draw.text((350, 120), time_period, fill="black", font=self.fonts['regular']['medium'])
+            draw.text((pos['x'], pos['y']), time_period, fill="black", font=self.fonts['regular']['medium'])
             
-            # Add page number
-            # Comment: Position X: 700, Y: 80
-            draw.text((700, 80), f"Page {page_num + 1}/{total_pages}", fill="black", font=self.fonts['regular']['small'])
+            # Draw page number
+            pos = self.pos_config['detail']['page_number']
+            draw.text((pos['x'], pos['y']), f"Page {page_num + 1}/{total_pages}", fill="black", font=self.fonts['regular']['small'])
             
             # Get orders for this page
             start_idx = page_num * orders_per_page
             end_idx = min((page_num + 1) * orders_per_page, len(orders))
             page_orders = orders[start_idx:end_idx]
             
-            # Starting Y position for the first order
-            # Comment: Starting Y position for orders table
-            y_pos = 200
-            y_increment = 30
+            y_pos = self.pos_config['detail']['order_start_y']
+            y_increment = self.pos_config['detail']['order_y_increment']
             
             for i, order in enumerate(page_orders):
-                # Comment: Order row positions
                 row_y = y_pos + (i * y_increment)
                 
-                # Order date (column 1)
-                # Comment: Date column X: 100
-                draw.text((100, row_y), order['created_at'].strftime("%Y-%m-%d"), fill="black", font=self.fonts['regular']['small'])
+                # Order date column
+                pos = self.pos_config['detail']['order_date']
+                draw.text((pos['x'], row_y), order['created_at'].strftime("%Y-%m-%d"), fill="black", font=self.fonts['regular']['small'])
                 
-                # Pickup code (column 2)
-                # Comment: Pickup code column X: 300
-                draw.text((300, row_y), str(order['pickup_code']), fill="black", font=self.fonts['bold']['small'])
+                # Pickup code column
+                pos = self.pos_config['detail']['pickup_code']
+                draw.text((pos['x'], row_y), str(order['pickup_code']), fill="black", font=self.fonts['bold']['small'])
                 
-                # Order amount (column 3)
-                # Comment: Amount column X: 600
-                draw.text((600, row_y), f"${order['store_total_fee']:.2f}", fill="black", font=self.fonts['regular']['small'])
+                # Order amount column
+                pos = self.pos_config['detail']['order_amount']
+                draw.text((pos['x'], row_y), f"${order['store_total_fee']:.2f}", fill="black", font=self.fonts['regular']['small'])
             
             pages.append(img)
         
