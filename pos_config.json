@@ -18,9 +18,9 @@
         "pickup_code": {"x": 130},
         "order_amount": {"x": 1270},
         "order_completed": {"x": 1700},
-        "order_user_id": {"x": 800},
+        "order_user_id": {"x": 880},
         "order_pay_type": {"x": 500},
-        "order_start_y": 585,
+        "order_start_y": 595,
         "order_y_increment": 100
     }
 }
