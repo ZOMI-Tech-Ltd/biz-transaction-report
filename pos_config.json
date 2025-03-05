@@ -11,13 +11,16 @@
         "unique_users": {"x": 1600, "y": 1050}
     },
     "detail": {
-        "store_name": {"x": 350, "y": 80},
-        "time_period": {"x": 350, "y": 120},
-        "page_number": {"x": 700, "y": 80},
-        "order_date": {"x": 100},
-        "pickup_code": {"x": 300},
-        "order_amount": {"x": 600},
-        "order_start_y": 200,
-        "order_y_increment": 30
+        "store_name": {"x": 1450, "y": 350},
+        "time_period": {"x": 1450, "y": 400},
+        "page_number": {"x": 2200, "y": 3000},
+        "order_date": {"x": 2040},
+        "pickup_code": {"x": 130},
+        "order_amount": {"x": 1270},
+        "order_completed": {"x": 1700},
+        "order_user_id": {"x": 800},
+        "order_pay_type": {"x": 500},
+        "order_start_y": 585,
+        "order_y_increment": 100
     }
 }

@@ -56,6 +56,10 @@ def main():
             )
             logger.info(f"Found {len(orders)} orders for {store_info['name']}")
             
+            # 填充每个订单的 user_name，从 user_profile 表获取
+            for order in orders:
+                order['user_name'] = db.get_user_profile(order['user_id'])
+            
             # Add total_orders and total_revenue to bill data for the overview page
             bill['total_orders'] = len(orders)
             bill['total_revenue'] = sum(order['store_total_fee'] for order in orders)

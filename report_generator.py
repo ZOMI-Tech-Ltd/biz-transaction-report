@@ -134,7 +134,12 @@ class ReportGenerator:
         """Generate detail report pages for orders, 23 orders per page"""
         pages = []
         orders_per_page = 23
-        total_pages = math.ceil(len(orders) / orders_per_page)
+        # 过滤 payment_method == 4 的订单
+        filtered_orders = [order for order in orders if order.get('payment_method') != 4]
+        total_pages = math.ceil(len(filtered_orders) / orders_per_page)
+        
+        # 定义 payment_method 映射
+        payment_method_map = {5: "Apple Pay", 7: "Card", 6: "Google Pay"}
         
         for page_num in range(total_pages):
             img = Image.open(self.details_template)
@@ -142,21 +147,21 @@ class ReportGenerator:
             
             # Draw store name in details page
             pos = self.pos_config['detail']['store_name']
-            draw.text((pos['x'], pos['y']), store_info['name'], fill="black", font=self.fonts['bold']['normal'])
+            draw.text((pos['x'], pos['y']), store_info['name'], fill="black", font=self.fonts['bold']['large'])
             
             # Draw time period in details page
             pos = self.pos_config['detail']['time_period']
             time_period = f"{bill_data['start_date'].strftime('%B %d, %Y')} - {bill_data['end_date'].strftime('%B %d, %Y')}"
-            draw.text((pos['x'], pos['y']), time_period, fill="black", font=self.fonts['regular']['medium'])
+            draw.text((pos['x'], pos['y']), time_period, fill="black", font=self.fonts['bold']['large'])
             
             # Draw page number
             pos = self.pos_config['detail']['page_number']
-            draw.text((pos['x'], pos['y']), f"Page {page_num + 1}/{total_pages}", fill="black", font=self.fonts['regular']['small'])
+            draw.text((pos['x'], pos['y']), f"Page {page_num + 1}/{total_pages}", fill="black", font=self.fonts['bold']['large'])
             
-            # Get orders for this page
+            # 取本页订单（过滤后）
             start_idx = page_num * orders_per_page
-            end_idx = min((page_num + 1) * orders_per_page, len(orders))
-            page_orders = orders[start_idx:end_idx]
+            end_idx = min((page_num + 1) * orders_per_page, len(filtered_orders))
+            page_orders = filtered_orders[start_idx:end_idx]
             
             y_pos = self.pos_config['detail']['order_start_y']
             y_increment = self.pos_config['detail']['order_y_increment']
@@ -166,15 +171,30 @@ class ReportGenerator:
                 
                 # Order date column
                 pos = self.pos_config['detail']['order_date']
-                draw.text((pos['x'], row_y), order['created_at'].strftime("%Y-%m-%d"), fill="black", font=self.fonts['regular']['small'])
+                draw.text((pos['x'], row_y), order['created_at'].strftime("%Y-%m-%d"), fill="black", font=self.fonts['bold']['large'])
+                
+                # 用户姓名列，使用 order['user_name'] 替换原 user_id
+                pos = self.pos_config['detail']['order_user_id']
+                draw.text((pos['x'], row_y), str(order.get('user_name', '')), fill="black", font=self.fonts['bold']['large'])
                 
                 # Pickup code column
                 pos = self.pos_config['detail']['pickup_code']
-                draw.text((pos['x'], row_y), str(order['pickup_code']), fill="black", font=self.fonts['bold']['small'])
+                draw.text((pos['x'], row_y), str(order['pickup_code']), fill="black", font=self.fonts['bold']['large'])
                 
-                # Order amount column
+                # Order amount column with Completed text
                 pos = self.pos_config['detail']['order_amount']
-                draw.text((pos['x'], row_y), f"${order['store_total_fee']:.2f}", fill="black", font=self.fonts['regular']['small'])
+                amount_text = f"${order['store_total_fee']:.2f}"
+                draw.text((pos['x'], row_y), amount_text, fill="black", font=self.fonts['bold']['large'])
+                
+                # Draw "Completed" next to order amount
+                pos = self.pos_config['detail']['order_completed']
+                draw.text((pos['x'], row_y), "Completed", fill="black", font=self.fonts['bold']['large'])
+                
+                # Payment method column (映射支付名称)
+                pos = self.pos_config['detail']['order_pay_type']
+                pay_value = order.get('payment_method')
+                pay_text = payment_method_map.get(pay_value, "") if pay_value is not None else ""
+                draw.text((pos['x'], row_y), pay_text, fill="black", font=self.fonts['bold']['large'])
             
             pages.append(img)
         

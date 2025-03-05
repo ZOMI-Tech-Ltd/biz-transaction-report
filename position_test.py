@@ -35,7 +35,9 @@ def main():
         orders.append({
             'created_at': datetime.datetime(2023, 1, 5 + i),
             'pickup_code': f"PC{i+1:03}",
-            'store_total_fee': 100.0 + i * 10
+            'store_total_fee': 100.0 + i * 10,
+            'user_id': i + 1,  # 添加 user_id 字段，确保有对应的用户数据
+            'pay_type': [5, 7, 6][i % 3]  # 新增 pay_type 字段
         })
     
     # 生成测试 PDF

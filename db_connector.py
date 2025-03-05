@@ -31,6 +31,16 @@ class DatabaseConnector:
         self.cursor.execute(query, (store_id,))
         return self.cursor.fetchone()
     
+    def get_user_profile(self, user_id):
+        """Get user profile information by user_id"""
+        query = """
+            SELECT name FROM user_profile
+            WHERE user_id = %s
+        """
+        self.cursor.execute(query, (user_id,))
+        result = self.cursor.fetchone()
+        return result['name'] if result else ""
+    
     def get_orders_by_store_and_period(self, store_id, start_date, end_date):
         """Get orders for a specific store within a time period"""
         query = """
