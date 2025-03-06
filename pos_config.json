@@ -1,26 +1,28 @@
 {
-    "overview": {
-        "store_name": {"x": 105, "y": 500},
-        "store_address": {"x": 650, "y": 500},
-        "time_period": {"x": 1500, "y": 500},
-        "settlement_amount": {"x": 105, "y": 780},
-        "total_orders": {"x": 650, "y": 780},
-        "total_revenue": {"x": 1600, "y": 780},
-        "pickup_tip_fee": {"x": 105, "y": 1050},
-        "stripe_fee": {"x": 650, "y": 1050},
-        "unique_users": {"x": 1600, "y": 1050}
-    },
-    "detail": {
-        "store_name": {"x": 1450, "y": 350},
-        "time_period": {"x": 1450, "y": 400},
-        "page_number": {"x": 2200, "y": 3000},
-        "order_date": {"x": 2040},
-        "pickup_code": {"x": 130},
-        "order_amount": {"x": 1270},
-        "order_completed": {"x": 1700},
-        "order_user_id": {"x": 880},
-        "order_pay_type": {"x": 500},
-        "order_start_y": 595,
-        "order_y_increment": 100
-    }
+  "overview": {
+    "store_name": { "x": 105, "y": 470 },
+    "store_address": { "x": 670, "y": 470 },
+    "time_period": { "x": 1830, "y": 470 },
+    "store_amount": { "x": 105, "y": 780 },
+    "total_orders": { "x": 1850, "y": 780 },
+    "total_revenue": { "x": 100, "y": 1070 },
+    "pickup_tip_fee": { "x": 1250, "y": 1070 },
+    "stripe_fee": { "x": 105, "y": 1600 },
+    "unique_users": { "x": 1270, "y": 780 },
+    "GST": { "x": 105, "y": 1350 },
+    "Additional_charge": { "x": 1250, "y": 1600 }
+  },
+  "detail": {
+    "store_name": { "x": 1350, "y": 300 },
+    "time_period": { "x": 1350, "y": 400 },
+    "page_number": { "x": 2200, "y": 3000 },
+    "order_date": { "x": 2040 },
+    "pickup_code": { "x": 130 },
+    "order_amount": { "x": 1270 },
+    "order_completed": { "x": 1700 },
+    "order_user_id": { "x": 880 },
+    "order_pay_type": { "x": 500 },
+    "order_start_y": 595,
+    "order_y_increment": 100
+  }
 }

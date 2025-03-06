@@ -14,11 +14,12 @@ class DatabaseConnector:
         self.cursor = self.connection.cursor(dictionary=True)
     
     def get_pending_bills(self):
-        """Get all bills with settlement_amount != 0"""
+        """Get all bills with store_amount != 0"""
         query = """
             SELECT * FROM order_bill_week
-            WHERE settlement_amount != 0
+            WHERE store_amount != 0
         """
+        # 只选取未结算的非0账单
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
@@ -42,10 +43,14 @@ class DatabaseConnector:
         return result['name'] if result else ""
     
     def get_orders_by_store_and_period(self, store_id, start_date, end_date):
-        """Get orders for a specific store within a time period"""
+        """Get orders for a specific store within a time period (inclusive of end_date)"""
         query = """
             SELECT * FROM `order`
-            WHERE store_id = %s AND created_at BETWEEN %s AND %s
+            WHERE store_id = %s 
+              AND created_at >= %s 
+              AND created_at < DATE_ADD(%s, INTERVAL 1 DAY)
+              AND state = 5000
+              AND payment_method != 4
             ORDER BY created_at
         """
         self.cursor.execute(query, (store_id, start_date, end_date))
