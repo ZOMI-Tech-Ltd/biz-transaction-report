@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 class TaxCalculator:
     BC_GST_RATE = Decimal("0.05")
-    BC_SodaTax_RATE = Decimal("0.07")
+    BC_SodaTax_RATE = Decimal("0.05")
     BC_LiquorTax_RATE = Decimal("0.10")
 
     def __init__(self):
@@ -32,17 +32,28 @@ class TaxCalculator:
         self.cursor.execute(query, tuple(order_ids))
         rows = self.cursor.fetchall()
 
-        GST_total = Decimal("0")
-        PST_total = Decimal("0")
+        GST_total = Decimal("0.00")
+        PST_total = Decimal("0.00")
+        
         for row in rows:
-            amount = Decimal(row["amount"])
+            # 确保使用Decimal转换数据库中的数值
+            amount = Decimal(str(row["amount"]))
             system_tax_id = row["system_tax_id"]
+            
             if system_tax_id == 1:
+                # GST计算
                 GST_total += amount * self.BC_GST_RATE
             elif system_tax_id == 2:
+                # 酒类税计算
                 PST_total += amount * self.BC_LiquorTax_RATE
             elif system_tax_id == 3:
+                # 碳酸饮料税计算
                 PST_total += amount * self.BC_SodaTax_RATE
+
+        # 使用quantize确保一致的小数位数
+        GST_total = GST_total.quantize(Decimal('0.01'))
+        PST_total = PST_total.quantize(Decimal('0.01'))
+
         return {"GST_total": GST_total, "PST_total": PST_total}
 
     def close(self):

@@ -1,20 +1,22 @@
 {
   "overview": {
     "store_name": { "x": 105, "y": 470 },
-    "store_address": { "x": 675, "y": 470 },
-    "time_period": { "x": 1825, "y": 470 },
-    "store_amount": { "x": 100, "y": 755 },
-    "total_orders": { "x": 1830, "y": 755 },
-    "total_revenue": { "x": 100, "y": 1060 },
-    "pickup_tip_fee": { "x": 1250, "y": 1060 },
+    "store_address": { "x": 670, "y": 470 },
+    "time_period": { "x": 1830, "y": 470 },
+    "store_amount": { "x": 105, "y": 760 },
+    "total_orders": { "x": 1850, "y": 760 },
+    "total_revenue": { "x": 100, "y": 1070 },
+    "pickup_tip_fee": { "x": 1250, "y": 1070 },
     "stripe_fee": { "x": 105, "y": 1600 },
-    "unique_users": { "x": 1250, "y": 755 },
-    "GST": { "x": 105, "y": 1340 },
-    "Additional_charge": { "x": 1250, "y": 1600 }
+    "unique_users": { "x": 1270, "y": 760 },
+    "GST": { "x": 105, "y": 1350 },
+    "Additional_charge": { "x": 1250, "y": 1600 },
+    "GST_total": { "x": 1250, "y": 1350 },
+    "PST_total": { "x": 1810, "y": 1350 }
   },
   "detail": {
-    "store_name": { "x": 1350, "y": 200 },
-    "time_period": { "x": 1350, "y": 300 },
+    "store_name": { "x": 1350, "y": 300 },
+    "time_period": { "x": 1350, "y": 400 },
     "page_number": { "x": 2200, "y": 3000 },
     "order_date": { "x": 2040 },
     "pickup_code": { "x": 130 },

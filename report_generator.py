@@ -13,7 +13,7 @@ from decimal import Decimal  # 新增导入
 class ReportGenerator:
     def __init__(self, output_dir=None):
         # Create a timestamp-based reports folder if none specified
-        if (output_dir is None):
+        if output_dir is None:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             self.output_dir = os.path.abspath(
                 os.path.join(
@@ -26,20 +26,19 @@ class ReportGenerator:
             )
         else:
             self.output_dir = output_dir
-        if (not os.path.exists(self.output_dir)):
+        if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         # Create subdirectories for organization
         self.pdf_dir = os.path.join(self.output_dir, "pdf_reports")
-        if (not os.path.exists(self.pdf_dir)):
+        if not os.path.exists(self.pdf_dir):
             os.makedirs(self.pdf_dir)
         # Log the output directory
         print(f"Reports will be saved to: {self.output_dir}")
         self.overview_template = os.path.join("report_template", "ReportOverview.png")
         self.details_template = os.path.join("report_template", "Reports.png")
-        self.additional_template = os.path.join(
-            "report_template", "AdditionalPage.png"
-        )
+        self.additional_template = os.path.join("report_template", "AdditionalPage.png")
         # Define font styles with various sizes for different data, using DMSans for all except Roboto Mono
+        # 字体大小调整，适应模板
         self.fonts = {
             "regular": {
                 "small": ImageFont.truetype(
@@ -76,6 +75,7 @@ class ReportGenerator:
                 ),
             },
             # Roboto Mono fonts remain unchanged
+            # 确保字体文件存在
             "roboto": {
                 "regular": ImageFont.truetype(
                     os.path.join("fonts", "RobotoMono-Regular.ttf"), 24
@@ -86,29 +86,46 @@ class ReportGenerator:
             },
         }
         # For backward compatibility with existing code
+        # 设置默认字体
         self.font_regular = self.fonts["regular"]["normal"]
         self.font_bold = self.fonts["bold"]["normal"]
         self.font_small = self.fonts["regular"]["small"]
+
+
         # Load position configuration from JSON file
         config_path = os.path.join(os.path.dirname(__file__), "pos_config.json")
         with open(config_path, "r") as f:
             self.pos_config = json.load(f)
 
+
+
     def generate_report(self, bill_data, store_info, orders):
         """Generate complete report PDF for a merchant"""
         store_name = store_info["name"]
+
+        # store_info = db.get_store_info(store_id)
+        
         report_id = (
             f"report_{store_info['id']}_{bill_data['start_date'].strftime('%Y%m%d')}"
         )
+
         # Generate overview page
+
         overview_page = self._generate_overview_page(bill_data, store_info)
+
+
         # 提前过滤订单，计算详情页总数
+
         filtered_orders = [
             order
             for order in orders
             if (order.get("payment_method") != 4 and order.get("state") == 5000)
+            # 过滤 payment_method == 4 的订单 (4: Cash)，并且状态为 5000 (已完成)
         ]
         detail_count = math.ceil(len(filtered_orders) / 23)
+        # 23 orders per page
+
+        # 计算是否有额外费用
         commission = abs(
             Decimal(bill_data.get("commission_fee", 0))
             - Decimal(bill_data.get("refund_commission_fee", 0))
@@ -117,16 +134,23 @@ class ReportGenerator:
         extra = abs(Decimal(bill_data.get("extra_fee", 0)))
         has_additional = commission > 0 or service > 0 or extra > 0
         overall_total = 1 + detail_count + (1 if has_additional else 0)
+
+
         # 生成详情页，向后传入整体页数
         detail_pages = self._generate_detail_pages(
             bill_data, store_info, orders, overall_total
         )
         pages = [overview_page] + detail_pages
+        # 生成额外费用页
         if has_additional:
             additional_page = self._generate_additional_page(
                 bill_data, store_info, detail_count + 2, overall_total
             )
             pages.append(additional_page)
+
+        # 在合并为 PDF 之前添加页码
+        pages = self._add_page_numbers(pages)
+
         # Combine pages into a PDF
         pdf_path = os.path.join(self.pdf_dir, f"{report_id}.pdf")
         self._combine_pages_to_pdf(pages, pdf_path)
@@ -155,7 +179,7 @@ class ReportGenerator:
                 lines.append(current_line)
             return "\n".join(lines)
 
-        # --- 绘制商户名称（最大宽度600） ---
+        # --- 绘制商户名称（最大宽度500） ---
         pos_name = self.pos_config["overview"]["store_name"]
         wrapped_name = wrap_text(
             store_info["name"], self.fonts["regular"]["small"], 500, draw
@@ -180,7 +204,7 @@ class ReportGenerator:
             spacing=4,
         )
 
-        # --- 绘制店铺地址（最大宽度1800） ---
+        # --- 绘制店铺地址（最大宽度1000） ---
         pos_address = self.pos_config["overview"]["store_address"]
         wrapped_address = wrap_text(
             store_info["address"], self.fonts["regular"]["small"], 1000, draw
@@ -194,6 +218,10 @@ class ReportGenerator:
         )
 
         # --- 其余绘制保持不变 ---
+
+        # --- 绘制总览数据 ---
+
+        # Orders and store amount
         pos = self.pos_config["overview"]["store_amount"]
         total_store_amount = Decimal(bill_data["store_amount"]) + Decimal(
             bill_data.get("extra_fee", 0)
@@ -211,6 +239,8 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["large"],
         )
+
+        # Sales
         pos = self.pos_config["overview"]["total_revenue"]
         draw.text(
             (pos["x"], pos["y"]),
@@ -218,6 +248,8 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["normal"],
         )
+
+        # Pickup tip fee
         pos = self.pos_config["overview"]["pickup_tip_fee"]
         pickup_tip_fee = bill_data.get("pickup_tip_fee", 0.0)
         draw.text(
@@ -226,6 +258,8 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["normal"],
         )
+        
+        # Stripe fee (negative value)
         pos = self.pos_config["overview"]["stripe_fee"]
         stripe_fee = Decimal(bill_data.get("stripe_fee", 0))
         draw.text(
@@ -234,6 +268,8 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["normal"],
         )
+
+        # Unique users
         pos = self.pos_config["overview"]["unique_users"]
         unique_users = bill_data.get("unique_users", 0)
         draw.text(
@@ -242,6 +278,8 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["large"],
         )
+
+        # Total taxes
         pos = self.pos_config["overview"]["GST"]
         draw.text(
             (pos["x"], pos["y"]),
@@ -249,6 +287,8 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["normal"],
         )
+
+        # Additional charge
         pos = self.pos_config["overview"]["Additional_charge"]
         draw.text(
             (pos["x"], pos["y"]),
@@ -256,6 +296,25 @@ class ReportGenerator:
             fill="black",
             font=self.fonts["regular"]["normal"],
         )
+
+        # Total GST
+        pos = self.pos_config["overview"]["GST_total"]
+        draw.text(
+            (pos["x"], pos["y"]),
+            f"${bill_data.get('GST_total', 0):.2f}",
+            fill="black",
+            font=self.fonts["regular"]["normal"],
+        )
+
+        # Total PST
+        pos = self.pos_config["overview"]["PST_total"]
+        draw.text(
+            (pos["x"], pos["y"]),
+            f"${bill_data.get('PST_total', 0):.2f}",
+            fill="black",
+            font=self.fonts["regular"]["normal"],
+        )
+
         return img
 
     def _generate_detail_pages(self, bill_data, store_info, orders, overall_total):
@@ -352,14 +411,15 @@ class ReportGenerator:
                 tip = order.get("tip_fee", 0)
                 refund = order.get("refund_amount", 0)
                 channel = order.get("channel", 1)  # 默认1: 非取货
-                if (refund):
+                if refund:
                     final_price = order["store_total_fee"] - refund
                     status_text = "Partial Refund"
                 else:
                     final_price = order["store_total_fee"]
                     status_text = "Completed"
-                if (channel == 2):
+                if channel == 2:
                     final_price += tip
+
                 # Order amount column with final price
                 pos = self.pos_config["detail"]["order_amount"]
                 amount_text = f"${final_price:.2f}"
@@ -438,13 +498,13 @@ class ReportGenerator:
 
         # 准备额外费用数据行，使用 roboto 字体绘制
         rows = []
-        if (bill_data.get("commission_fee", 0) != 0):
+        if bill_data.get("commission_fee", 0) != 0:
             amount = bill_data.get("commission_fee", 0) - bill_data.get(
                 "refund_commission_fee", 0
             )
             rows.append(("Commission Fee", f"$-{amount:.2f}", end_date_str))
-            
-        if (bill_data.get("service_package_fee", 0) != 0):
+
+        if bill_data.get("service_package_fee", 0) != 0:
             rows.append(
                 (
                     "Service Package Fee",
@@ -452,7 +512,7 @@ class ReportGenerator:
                     end_date_str,
                 )
             )
-        if (bill_data.get("extra_fee", 0) != 0):
+        if bill_data.get("extra_fee", 0) != 0:
             remark = bill_data.get("remark", "Extra Fee")
             rows.append((remark, f"${bill_data['extra_fee']:.2f}", end_date_str))
 
@@ -463,11 +523,11 @@ class ReportGenerator:
             row_y = base_y + (i * increment)
             # Commission row：名称使用 pos_config["commission_fee"]["name"]等（其它行类似）
             # 根据费用类型选择对应的 x 坐标
-            if (name in ["Commission Fee"]):
+            if name in ["Commission Fee"]:
                 name_x = pos_config["commission_fee"]["name"]["x"]
                 amount_x = pos_config["commission_fee"]["amount"]["x"]
                 date_x = pos_config["commission_fee"]["date"]["x"]
-            elif (name in ["Service Package Fee"]):
+            elif name in ["Service Package Fee"]:
                 name_x = pos_config["service_package_fee"]["name"]["x"]
                 amount_x = pos_config["service_package_fee"]["amount"]["x"]
                 date_x = pos_config["service_package_fee"]["date"]["x"]
@@ -498,7 +558,7 @@ class ReportGenerator:
         pdf_writer = PyPDF2.PdfWriter()
         for img in images:
             # Convert RGBA to RGB mode before saving as PDF
-            if (img.mode == "RGBA"):
+            if img.mode == "RGBA":
                 # Create a white background image
                 bg = Image.new("RGB", img.size, (255, 255, 255))
                 # Paste the RGBA image on the white background, using alpha as mask
@@ -512,3 +572,18 @@ class ReportGenerator:
         with open(output_path, "wb") as f:
             pdf_writer.write(f)
 
+    def _add_page_numbers(self, pages):
+        """在所有页面添加页码"""
+        total_pages = len(pages)
+        for i, img in enumerate(pages):
+            draw = ImageDraw.Draw(img)
+            page_num = i + 1
+            # 使用 detail 中的 page_number 坐标
+            pos = self.pos_config["detail"]["page_number"]
+            draw.text(
+                (pos["x"], pos["y"]),
+                f"Page {page_num}/{total_pages}",
+                fill="black",
+                font=self.fonts["regular"]["small"],
+            )
+        return pages

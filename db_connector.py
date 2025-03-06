@@ -1,6 +1,7 @@
 import mysql.connector
 import os
 from dotenv import load_dotenv
+from decimal import Decimal
 
 class DatabaseConnector:
     def __init__(self):
@@ -56,6 +57,30 @@ class DatabaseConnector:
         self.cursor.execute(query, (store_id, start_date, end_date))
         return self.cursor.fetchall()
     
+    def get_week_bill_by_date(self, store_id, date):
+        """根据日期找到包含该日期的周账单，并转换金额为Decimal"""
+        query = """
+            SELECT * FROM order_bill_week
+            WHERE store_id = %s 
+              AND start_date <= %s 
+              AND end_date >= %s
+        """
+        self.cursor.execute(query, (store_id, date, date))
+        result = self.cursor.fetchone()
+        
+        # 如果结果存在，将所有金额字段转换为Decimal
+        if result:
+            money_fields = [
+                'store_amount', 'original_price', 'discount_fee', 'refund_amount',
+                'product_tax_fee', 'commission_fee', 'refund_commission_fee',
+                'service_package_fee', 'extra_fee', 'stripe_fee'
+            ]
+            for field in money_fields:
+                if field in result and result[field] is not None:
+                    result[field] = Decimal(str(result[field]))
+        
+        return result
+        
     def close(self):
         """Close database connection"""
         self.cursor.close()
