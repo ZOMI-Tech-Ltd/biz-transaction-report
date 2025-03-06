@@ -4,6 +4,7 @@ from db_connector import DatabaseConnector
 from report_generator import ReportGenerator
 import logging
 import datetime
+from decimal import Decimal  # 新增导入
 
 # Configure logging
 logging.basicConfig(
@@ -40,18 +41,20 @@ def main():
             order["user_name"] = db.get_user_profile(order["user_id"])
         
         total_orders = len(orders)
-        original_price = sum(order["store_total_fee"] for order in orders) if orders else 0
+        original_price = sum(Decimal(order["store_total_fee"]) for order in orders) if orders else Decimal("0")
+        # 若 bill（从 get_pending_bills 返回的记录）中包含extra_fee，则赋值，否则默认为0
         bill_data = {
             "start_date": report_date,
             "end_date": report_date,
             "store_amount": original_price,
             "original_price": original_price,
-            "discount_fee": 0,
-            "refund_amount": 0,
-            "product_tax_fee": 0,
-            "commission_fee": 0,
-            "refund_commission_fee": 0,
-            "service_package_fee": 0,
+            "discount_fee": Decimal("0"),
+            "refund_amount": Decimal("0"),
+            "product_tax_fee": Decimal("0"),
+            "commission_fee": Decimal("0"),
+            "refund_commission_fee": Decimal("0"),
+            "service_package_fee": Decimal("0"),
+            "extra_fee": Decimal("0"),
             "total_orders": total_orders,
             "total_revenue": original_price,
             "unique_users": len(set(order["user_id"] for order in orders))
@@ -114,9 +117,9 @@ def main():
                 bill["total_orders"] = len(orders)
                 # Calculate total_revenue = original_price - refund_amount
                 bill["total_revenue"] = (
-                    bill.get("original_price", 0)
-                    - bill.get("discount_fee", 0)
-                    - bill.get("refund_amount", 0)
+                    bill.get("original_price", Decimal("0"))
+                    - bill.get("discount_fee", Decimal("0"))
+                    - bill.get("refund_amount", Decimal("0"))
                 )
                 # 计算unique_users
                 bill["unique_users"] = len(set(order["user_id"] for order in orders))
@@ -126,11 +129,12 @@ def main():
 
                 # 新增 Additional_charge = (commission_fee - refund_commission_fee) + service_package_fee
                 
-                bill["Additional_charge"] = (
+                bill["Additional_charge"] = (-(
                     bill.get("commission_fee", 0)
                     - bill.get("refund_commission_fee", 0)
                     + bill.get("service_package_fee", 0)
-                )
+                    - bill.get("extra_fee", 0)
+                ))
 
                 # Generate report
                 report_path = report_gen.generate_report(bill, store_info, orders)
