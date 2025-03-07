@@ -33,8 +33,20 @@
     "page_number": { "x": 2200, "y": 3000 },
     "row_start_y": 595,
     "row_y_increment": 100,
-    "commission_fee": { "name": { "x": 130 }, "amount": { "x": 1700 }, "date": { "x": 2040 } },
-    "service_package_fee": { "name": { "x": 130 }, "amount": { "x": 1700 }, "date": { "x": 2040 } },
-    "extra_fee": { "name": { "x": 130 }, "amount": { "x": 1700 }, "date": { "x": 2040 } }
+    "commission_fee": {
+      "name": { "x": 130 },
+      "amount": { "x": 1700 },
+      "date": { "x": 2040 }
+    },
+    "service_package_fee": {
+      "name": { "x": 130 },
+      "amount": { "x": 1700 },
+      "date": { "x": 2040 }
+    },
+    "extra_fee": {
+      "name": { "x": 130 },
+      "amount": { "x": 1700 },
+      "date": { "x": 2040 }
+    }
   }
 }
