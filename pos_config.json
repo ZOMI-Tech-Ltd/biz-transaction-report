@@ -12,7 +12,7 @@
     "GST": { "x": 105, "y": 1350 },
     "Additional_charge": { "x": 1250, "y": 1600 },
     "GST_total": { "x": 1250, "y": 1350 },
-    "PST_total": { "x": 1810, "y": 1350 }
+    "PST_total": { "x": 1820, "y": 1350 }
   },
   "detail": {
     "store_name": { "x": 1350, "y": 300 },
