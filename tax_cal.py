@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 class TaxCalculator:
     BC_GST_RATE = Decimal("0.05")
-    BC_SodaTax_RATE = Decimal("0.05")
+    BC_SodaTax_RATE = Decimal("0.07")
     BC_LiquorTax_RATE = Decimal("0.10")
 
     def __init__(self):
