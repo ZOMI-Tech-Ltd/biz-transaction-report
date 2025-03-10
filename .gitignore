@@ -176,6 +176,7 @@ cython_debug/
 # Generated report files
 generated_reports/
 */pdf_reports/
+single_report/
 
 # Uncomment if you don't want to track the template files
 # report_template/*.png

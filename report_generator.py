@@ -16,14 +16,8 @@ class ReportGenerator:
         if output_dir is None:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             self.output_dir = os.path.abspath(
-                os.path.join(
-                    "e:",
-                    "ZOMI",
-                    "biz-transaction-report",
-                    "generated_reports",
-                    f"report_batch_{timestamp}",
-                )
-            )
+        os.path.join("generated_reports", f"report_batch_{timestamp}")
+    )
         else:
             self.output_dir = output_dir
         if not os.path.exists(self.output_dir):
