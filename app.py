@@ -116,6 +116,7 @@ def generate_report():
         service_package_fee = Decimal(str(week_bill.get("service_package_fee", 0)))
         extra_fee = Decimal(str(week_bill.get("extra_fee", 0)))
         
+        # 计算Additional_charge, 为负数
         additional_charge = -(
             commission_fee
             - refund_commission_fee
