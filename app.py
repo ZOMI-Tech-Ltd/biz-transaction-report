@@ -184,10 +184,10 @@ def generate_report():
             logger.info(f"Renamed report file to: {report_path}")
         
         # 自动打开生成的文件
-        try:
-            open_file(report_path)
-        except Exception as e:
-            logger.warning(f"Could not automatically open the file: {str(e)}")
+        # try:
+        #     open_file(report_path)
+        # except Exception as e:
+        #     logger.warning(f"Could not automatically open the file: {str(e)}")
             
         db.close()
         
