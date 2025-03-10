@@ -28,7 +28,7 @@ class DatabaseConnector:
         """Get store information by store_id"""
         query = """
             SELECT * FROM store
-            WHERE id = %s
+            WHERE id = %s AND deleted_at IS NULL
         """
         self.cursor.execute(query, (store_id,))
         return self.cursor.fetchone()
@@ -80,6 +80,15 @@ class DatabaseConnector:
                     result[field] = Decimal(str(result[field]))
         
         return result
+    
+    def get_store_contact_email(self, store_id):
+        """从store_contact表获取商店联系人邮箱"""
+        query = """
+            SELECT contact_email FROM store_contact WHERE deleted_at IS NULL AND store_id = %s
+        """
+        self.cursor.execute(query, (store_id,))
+        result = self.cursor.fetchone()
+        return result['contact_email'] if result else None
         
     def close(self):
         """Close database connection"""
