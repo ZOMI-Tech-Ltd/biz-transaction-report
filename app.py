@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 import os
 import tempfile
 from flask import Flask, request, jsonify, send_file, Response, stream_with_context
@@ -17,6 +18,8 @@ from db_connector import DatabaseConnector
 from report_generator import ReportGenerator
 from tax_cal import TaxCalculator  # 导入税额计算器
 
+load_dotenv()
+
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -27,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 # Mandrill API相关常量
 MANDRILL_API_KEY = os.environ.get("MANDRILL_API_KEY")
-FROM_EMAIL = os.environ.get("FROM_EMAIL", "no-reply@example.com")
+FROM_EMAIL = os.environ.get("FROM_EMAIL", "hello@zomi.menu")
 FROM_NAME = os.environ.get("FROM_NAME", "ZOMI Team")
 
 app = Flask(__name__)
@@ -350,21 +353,24 @@ def generate_and_email_report():
             pdf_data = f.read()
             pdf_base64 = base64.b64encode(pdf_data).decode('utf-8')
         
+
+        client = MailchimpTransactional.Client(MANDRILL_API_KEY)
         # 使用Mandrill API发送电子邮件
         store_name = store_info.get("name", f"Store #{store_id}")
         if not MANDRILL_API_KEY:
             logger.error("MANDRILL_API_KEY not set")
             return jsonify({"error": "MANDRILL_API_KEY not configured"}), 500
 
-        client = MailchimpTransactional.Client(MANDRILL_API_KEY)
-
+    
         message = {
             "from_email": FROM_EMAIL,
             "from_name": FROM_NAME,
-            "subject": "Your new weekly transaction report is here! 🚀",
+            "subject": "Weekly Payout Report | ZOMI",
             "to": [{"email": contact_email, "type": "to"}],
             "global_merge_vars": [
                 {"name": "COMPANY", "content": store_name},
+                {"name": "Startdate", "content": start_date.strftime("%Y/%m/%d")},
+                {"name": "Enddate", "content": end_date.strftime("%Y/%m/%d")},
             ],
             # 添加报告作为附件
             "attachments": [
@@ -379,7 +385,7 @@ def generate_and_email_report():
         try:
             response = client.messages.send_template(
                 {
-                    "template_name": "report",  # Mandrill模板名称
+                    "template_name": "transaction-report",  # Mandrill模板名称
                     "template_content": [],
                     "message": message,
                 }
@@ -410,5 +416,5 @@ def generate_and_email_report():
 
 if __name__ == "__main__":
     # 运行服务器，设置host为0.0.0.0以便可以从外部访问
-    app.run(host="0.0.0.0", port=5009, debug=True)
+    app.run(host="0.0.0.0", port=5009, debug=False)
 
