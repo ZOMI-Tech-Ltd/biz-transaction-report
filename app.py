@@ -1,3 +1,5 @@
+import boto3
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os
 import tempfile
@@ -33,7 +35,49 @@ MANDRILL_API_KEY = os.environ.get("MANDRILL_API_KEY")
 FROM_EMAIL = os.environ.get("FROM_EMAIL", "hello@zomi.menu")
 FROM_NAME = os.environ.get("FROM_NAME", "ZOMI Team")
 
+AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
+AWS_REGION = os.environ.get("AWS_REGION", "us-west-2")
+S3_BUCKET = os.environ.get("AWS_BUCKET_NAME", "zomi-transaction-reports")
+
 app = Flask(__name__)
+
+
+# 添加上传函数
+def upload_to_s3(file_path, file_name=None):
+    """
+    将文件上传到 S3 并返回可访问的 URL
+    """
+    if not file_name:
+        file_name = os.path.basename(file_path)
+    
+    try:
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_KEY,
+            region_name=AWS_REGION
+        )
+        
+        # 上传文件到 S3
+        s3_client.upload_file(
+            file_path,
+            S3_BUCKET,
+            file_name,
+            ExtraArgs={
+                'ContentType': 'application/pdf',
+                'ACL': 'public-read'  # 设置为公开可读
+            }
+        )
+        
+        # 构建并返回 URL
+        url = f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{file_name}"
+        logger.info(f"File uploaded to S3: {url}")
+        return url
+    
+    except Exception as e:
+        logger.error(f"Error uploading to S3: {str(e)}")
+        raise
 
 # 确保single_report文件夹存在
 def ensure_dir_exists(dir_path):
@@ -194,22 +238,32 @@ def generate_report():
             
         db.close()
         
-        # 将PDF文件读入内存并返回
-        with open(report_path, 'rb') as f:
-            pdf_data = f.read()
-        
-        return send_file(
-            BytesIO(pdf_data),
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=pdf_filename
-        )
+        try:
+            s3_url = upload_to_s3(report_path, pdf_filename)
+            # 按照要求的格式返回 URL
+            return jsonify({
+                "code": 0,
+                "data": {
+                    "url": s3_url
+                }
+            })
+        except Exception as s3_error:
+            logger.error(f"Error uploading to S3: {str(s3_error)}", exc_info=True)
+            # 如果 S3 上传失败，返回错误信息
+            return jsonify({
+                "code": 1,
+                "msg": f"Failed to upload report to S3: {str(s3_error)}"
+            }), 500
 
     except Exception as e:
         logger.error(f"Error generating report: {str(e)}", exc_info=True)
         if 'db' in locals():
             db.close()
-        return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
+        return jsonify({
+            "code": 1,
+            "msg": f"Failed to generate report: {str(e)}"
+        }), 500
+
 
 @app.route('/generate-and-email-report/', methods=['POST'])
 def generate_and_email_report():
