@@ -89,6 +89,7 @@ def main():
             "original_price": original_price,
             "discount_fee": Decimal(str(week_bill.get("discount_fee", 0))),
             "refund_amount": Decimal(str(week_bill.get("refund_amount", 0))),
+            "pickup_tip_fee": Decimal(str(week_bill.get("pickup_tip_fee", 0))),
             "product_tax_fee": GST,  # 这是原始 GST
             "commission_fee": commission_fee,
             "refund_commission_fee": refund_commission_fee,
