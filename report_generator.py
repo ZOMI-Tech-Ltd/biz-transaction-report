@@ -411,8 +411,11 @@ class ReportGenerator:
                 else:
                     final_price = order["store_total_fee"]
                     status_text = "Completed"
+                '''
                 if channel == 2:
                     final_price += tip
+                # 每一行的金额不加小费
+                '''
 
                 # Order amount column with final price
                 pos = self.pos_config["detail"]["order_amount"]
