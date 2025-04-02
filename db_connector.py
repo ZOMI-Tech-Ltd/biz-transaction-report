@@ -48,11 +48,11 @@ class DatabaseConnector:
         query = """
             SELECT * FROM `order`
             WHERE store_id = %s 
-              AND created_at >= %s 
-              AND created_at < DATE_ADD(%s, INTERVAL 1 DAY)
+              AND complete_time >= %s 
+              AND complete_time < DATE_ADD(%s, INTERVAL 1 DAY)
               AND state = 5000
               AND payment_method != 4
-            ORDER BY created_at
+            ORDER BY complete_time
         """
         self.cursor.execute(query, (store_id, start_date, end_date))
         return self.cursor.fetchall()
