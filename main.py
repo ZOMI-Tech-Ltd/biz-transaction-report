@@ -71,13 +71,13 @@ def main():
         # 计算Additional_charge，使用与批量报告相同的公式
         commission_fee = Decimal(str(week_bill.get("commission_fee", 0)))
         refund_commission_fee = Decimal(str(week_bill.get("refund_commission_fee", 0)))
-        service_package_fee = Decimal(str(week_bill.get("service_package_fee", 0)))
+        asset_balance_repayment = Decimal(str(week_bill.get("asset_balance_repayment", 0)))
         extra_fee = Decimal(str(week_bill.get("extra_fee", 0)))
         
         additional_charge = -(
             commission_fee
             - refund_commission_fee
-            + service_package_fee
+            + asset_balance_repayment
             - extra_fee
         )
         
@@ -93,7 +93,7 @@ def main():
             "product_tax_fee": GST,  # 这是原始 GST
             "commission_fee": commission_fee,
             "refund_commission_fee": refund_commission_fee,
-            "service_package_fee": service_package_fee,
+            "asset_balance_repayment": asset_balance_repayment, # 这是原始服务包费用，避免转账和报表发生的服务费不一致
             "extra_fee": extra_fee,
             "total_orders": total_orders,
             "total_revenue": original_price - Decimal(str(week_bill.get("discount_fee", 0))) - Decimal(str(week_bill.get("refund_amount", 0))),
@@ -195,7 +195,7 @@ def main():
                 bill["Additional_charge"] = -(
                     Decimal(str(bill.get("commission_fee", 0)))
                     - Decimal(str(bill.get("refund_commission_fee", 0)))
-                    + Decimal(str(bill.get("service_package_fee", 0)))
+                    + Decimal(str(bill.get("asset_balance_repayment", 0)))
                     - Decimal(str(bill.get("extra_fee", 0)))
                 )
 

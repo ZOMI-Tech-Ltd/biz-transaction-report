@@ -59,7 +59,7 @@ def main():
         "product_tax_fee": 80.00,  # 产品税费（GST）
         "commission_fee": 60.00,   # 佣金
         "refund_commission_fee": 10.00,  # 退款佣金
-        "service_package_fee": 20.00,    # 服务包费用
+        "asset_balance_repayment": 20.00,    # 服务包费用
         "extra_fee": 5.00,         # 额外费用
         "stripe_fee": 30.00,       # Stripe处理费
         "pickup_tip_fee": 0.00,    # 取货小费
@@ -111,7 +111,7 @@ def main():
     
     # --- 额外费用项目 ---
     # 决定是否生成额外费用页面取决于bill_data中的相关费用是否非零：
-    # commission_fee, refund_commission_fee, service_package_fee, extra_fee
+    # commission_fee, refund_commission_fee, asset_balance_repayment, extra_fee
     # 如果想要控制是否生成额外费用页面，需要相应地设置上述字段
     
     # 生成报告

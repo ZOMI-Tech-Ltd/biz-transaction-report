@@ -38,7 +38,7 @@
       "amount": { "x": 1700 },
       "date": { "x": 2040 }
     },
-    "service_package_fee": {
+    "asset_balance_repayment": {
       "name": { "x": 130 },
       "amount": { "x": 1700 },
       "date": { "x": 2040 }

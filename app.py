@@ -168,14 +168,14 @@ def generate_report():
         # 计算Additional_charge
         commission_fee = Decimal(str(week_bill.get("commission_fee", 0)))
         refund_commission_fee = Decimal(str(week_bill.get("refund_commission_fee", 0)))
-        service_package_fee = Decimal(str(week_bill.get("service_package_fee", 0)))
+        asset_balance_repayment = Decimal(str(week_bill.get("asset_balance_repayment", 0)))
         extra_fee = Decimal(str(week_bill.get("extra_fee", 0)))
         
         # 计算Additional_charge, 为负数
         additional_charge = -(
             commission_fee
             - refund_commission_fee
-            + service_package_fee
+            + asset_balance_repayment
             - extra_fee
         )
         
@@ -191,7 +191,7 @@ def generate_report():
             "product_tax_fee": GST,
             "commission_fee": commission_fee,
             "refund_commission_fee": refund_commission_fee,
-            "service_package_fee": service_package_fee,
+            "asset_balance_repayment": asset_balance_repayment,
             "extra_fee": extra_fee,
             "total_orders": total_orders,
             "total_revenue": original_price - Decimal(str(week_bill.get("discount_fee", 0))) - Decimal(str(week_bill.get("refund_amount", 0))),
@@ -341,14 +341,14 @@ def generate_and_email_report():
         # 计算Additional_charge
         commission_fee = Decimal(str(week_bill.get("commission_fee", 0)))
         refund_commission_fee = Decimal(str(week_bill.get("refund_commission_fee", 0)))
-        service_package_fee = Decimal(str(week_bill.get("service_package_fee", 0)))
+        asset_balance_repayment = Decimal(str(week_bill.get("asset_balance_repayment", 0)))
         extra_fee = Decimal(str(week_bill.get("extra_fee", 0)))
         
         # 计算Additional_charge, 为负数
         additional_charge = -(
             commission_fee
             - refund_commission_fee
-            + service_package_fee
+            + asset_balance_repayment
             - extra_fee
         )
         
@@ -364,7 +364,7 @@ def generate_and_email_report():
             "pickup_tip_fee": Decimal(str(week_bill.get("pickup_tip_fee", 0))),
             "commission_fee": commission_fee,
             "refund_commission_fee": refund_commission_fee,
-            "service_package_fee": service_package_fee,
+            "asset_balance_repayment": asset_balance_repayment,
             "extra_fee": extra_fee,
             "total_orders": total_orders,
             "total_revenue": original_price - Decimal(str(week_bill.get("discount_fee", 0))) - Decimal(str(week_bill.get("refund_amount", 0))),

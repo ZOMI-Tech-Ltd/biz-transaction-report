@@ -124,7 +124,7 @@ class ReportGenerator:
             Decimal(bill_data.get("commission_fee", 0))
             - Decimal(bill_data.get("refund_commission_fee", 0))
         )
-        service = abs(Decimal(bill_data.get("service_package_fee", 0)))
+        service = abs(Decimal(bill_data.get("asset_balance_repayment", 0)))
         extra = abs(Decimal(bill_data.get("extra_fee", 0)))
         has_additional = commission > 0 or service > 0 or extra > 0
         overall_total = 1 + detail_count + (1 if has_additional else 0)
@@ -501,11 +501,11 @@ class ReportGenerator:
             )
             rows.append(("Commission Fee", f"$-{amount:.2f}", end_date_str))
 
-        if bill_data.get("service_package_fee", 0) != 0:
+        if bill_data.get("asset_balance_repayment", 0) != 0:
             rows.append(
                 (
                     "Service Package Fee",
-                    f"$-{bill_data['service_package_fee']:.2f}",
+                    f"$-{bill_data['asset_balance_repayment']:.2f}",
                     end_date_str,
                 )
             )
@@ -525,9 +525,9 @@ class ReportGenerator:
                 amount_x = pos_config["commission_fee"]["amount"]["x"]
                 date_x = pos_config["commission_fee"]["date"]["x"]
             elif name in ["Service Package Fee"]:
-                name_x = pos_config["service_package_fee"]["name"]["x"]
-                amount_x = pos_config["service_package_fee"]["amount"]["x"]
-                date_x = pos_config["service_package_fee"]["date"]["x"]
+                name_x = pos_config["asset_balance_repayment"]["name"]["x"]
+                amount_x = pos_config["asset_balance_repayment"]["amount"]["x"]
+                date_x = pos_config["asset_balance_repayment"]["date"]["x"]
             else:
                 name_x = pos_config["extra_fee"]["name"]["x"]
                 amount_x = pos_config["extra_fee"]["amount"]["x"]

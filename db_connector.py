@@ -73,7 +73,7 @@ class DatabaseConnector:
             money_fields = [
                 'store_amount', 'original_price', 'discount_fee', 'refund_amount',
                 'product_tax_fee', 'commission_fee', 'refund_commission_fee',
-                'service_package_fee', 'extra_fee', 'stripe_fee'
+                'asset_balance_repayment', 'extra_fee', 'stripe_fee'
             ]
             for field in money_fields:
                 if field in result and result[field] is not None:
