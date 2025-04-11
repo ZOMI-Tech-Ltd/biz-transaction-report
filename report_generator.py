@@ -551,23 +551,70 @@ class ReportGenerator:
         return img
 
     def _combine_pages_to_pdf(self, images, output_path):
-        """Convert a list of PIL images to a single PDF file"""
+        """将PIL图像列表转换为单个PDF文件，加强图像处理和文件操作安全性"""
+        import time
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        logger.info(f"开始合并{len(images)}个页面到PDF: {output_path}")
+        
         pdf_writer = PyPDF2.PdfWriter()
-        for img in images:
-            # Convert RGBA to RGB mode before saving as PDF
-            if img.mode == "RGBA":
-                # Create a white background image
+        
+        for i, img in enumerate(images):
+            logger.info(f"处理第{i+1}页，图像模式: {img.mode}, 尺寸: {img.size}")
+            
+            # 增强图像格式转换逻辑，处理所有可能的透明通道情况
+            if img.mode == "RGBA" or img.mode == "LA":
+                logger.info(f"将第{i+1}页从{img.mode}转换为RGB模式")
+                # 创建白色背景
                 bg = Image.new("RGB", img.size, (255, 255, 255))
-                # Paste the RGBA image on the white background, using alpha as mask
-                bg.paste(img, (0, 0), img.split()[3])  # 3 is the alpha channel
+                if img.mode == "RGBA":
+                    # 使用alpha通道作为遮罩
+                    bg.paste(img, (0, 0), img.split()[3])
+                else:  # LA模式
+                    bg.paste(img, (0, 0), img.split()[1])
                 img = bg
+            elif img.mode != "RGB":
+                logger.info(f"将第{i+1}页从{img.mode}转换为RGB模式")
+                img = img.convert("RGB")
+                
+            # 保存为临时PDF字节流
             img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format="PDF")
-            img_byte_arr.seek(0)
-            pdf_reader = PyPDF2.PdfReader(img_byte_arr)
-            pdf_writer.add_page(pdf_reader.pages[0])
-        with open(output_path, "wb") as f:
-            pdf_writer.write(f)
+            try:
+                img.save(img_byte_arr, format="PDF")
+                img_byte_arr.seek(0)
+                
+                # 读取PDF并添加到最终文档
+                pdf_reader = PyPDF2.PdfReader(img_byte_arr)
+                pdf_writer.add_page(pdf_reader.pages[0])
+                logger.info(f"第{i+1}页已添加到PDF")
+            except Exception as e:
+                logger.error(f"处理第{i+1}页时出错: {str(e)}")
+                raise
+        
+        # 创建输出目录（如果不存在）
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        
+        # 写入PDF文件
+        try:
+            with open(output_path, "wb") as f:
+                pdf_writer.write(f)
+            
+            # 确保文件完全写入磁盘
+            time.sleep(0.1)
+            logger.info(f"PDF成功保存到: {output_path}，共{len(images)}页")
+            
+            # 验证文件已成功写入
+            if os.path.exists(output_path):
+                file_size = os.path.getsize(output_path)
+                logger.info(f"已确认文件写入，文件大小: {file_size}字节")
+            else:
+                logger.warning(f"文件写入验证失败，无法找到: {output_path}")
+        except Exception as e:
+            logger.error(f"保存PDF时出错: {str(e)}")
+            raise
+            
+        return output_path
 
     def _add_page_numbers(self, pages):
         """在所有页面添加页码"""
